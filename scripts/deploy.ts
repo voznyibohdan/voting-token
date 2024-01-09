@@ -10,7 +10,6 @@ async function main() {
         value: lockedAmount,
     });
 
-
     await lock.waitForDeployment();
 
     console.log(
