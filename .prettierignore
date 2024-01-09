@@ -1,0 +1,16 @@
+node_modules
+artifacts
+cache
+typechain-types
+coverage
+
+.solhint.json
+.eslintrc
+.eslintignore
+.solcover.json
+coverage.json
+gasReporterOutput.json
+
+package-lock.json
+package.json
+tsconfig.json
