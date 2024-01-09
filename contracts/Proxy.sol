@@ -18,6 +18,7 @@ contract ProxyContract {
     modifier onlyOwner() {
         require(msg.sender == owner);
         _;
+
     }
 
     /// @dev Internal function to initialize the proxy contract.
