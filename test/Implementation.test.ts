@@ -136,7 +136,7 @@ describe('Implementation Contract', () => {
                 implContract
                     .connect(fromAccount)
                     .transfer(toAccount.address, 1),
-            ).to.revertedWith('Cant perform operation while voting is active1');
+            ).to.revertedWith('Cant perform operation while voting is active');
         });
 
         it('Should change user balances, emit Transfer event', async () => {
