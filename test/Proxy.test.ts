@@ -93,6 +93,7 @@ describe('Proxy Contract', function () {
         it('should', async () => {
             const { proxyContract, newImplementation } =
                 await loadFixture(deploy);
+            // @ts-ignore
             await proxyContract.balanceOf(newImplementation.address);
             expect(true).to.equal(true);
         });
