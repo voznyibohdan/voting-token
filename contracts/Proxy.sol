@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.20;
 
-contract ProxyContract {
+contract Proxy {
     /// @notice Address of the current implementation contract.
     address public implementation;
     /// @notice Address of the owner of this proxy contract.
@@ -16,7 +16,7 @@ contract ProxyContract {
 
     /// @dev Ensures that the caller is the owner of the proxy contract.
     modifier onlyOwner() {
-        require(msg.sender == owner);
+        require(msg.sender == owner, "only owner");
         _;
     }
 
