@@ -13,7 +13,9 @@
     "lint:prettier": "prettier \"**/*.{js,ts,json}\" --write",
     "lint:solhint": "solhint \"contracts/**/*.sol\" --quiet --fix",
     "lint": "npm run lint:prettier && npm run lint:eslint && npm run lint:solhint",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "r": "npx hardhat run scripts/reentrancy.ts",
+    "dos": "npx hardhat run scripts/votingdos.ts"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",

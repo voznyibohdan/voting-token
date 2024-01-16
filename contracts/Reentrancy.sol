@@ -3,10 +3,8 @@ pragma solidity ^0.8.20;
 
 contract Reentrancy {
     mapping(address => uint256) public balances;
-    uint256 public num;
 
-    constructor(uint256 _num) {
-        num = _num;
+    constructor() {
     }
 
     function deposit() external payable {
@@ -22,7 +20,7 @@ contract Reentrancy {
 
 //    function withdrawSafe() external {
 //        uint256 accountBalance = balances[msg.sender];
-//        delete balances[msg.sender];
+//        balances[msg.sender] = 0;
 //
 //        (bool sent,) = payable(msg.sender).call{value : balances[msg.sender]}("");
 //        if (!sent) revert NativeTokenTransferError();

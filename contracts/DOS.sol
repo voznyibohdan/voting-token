@@ -1,16 +1,14 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 contract DOS {
     address[] public voters;
 
-    function vote() external {
-        voters.push(msg.sender);
+    function vote(address user) external {
+        voters.push(user);
     }
 
-    function votingResults() external {
-        for (uint256 i = 0; i <= voters.length; i++) {
-
-        }
+    function endVoting() external {
+        for (uint256 i = 0; i <= voters.length; i++) {}
     }
 }
