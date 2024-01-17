@@ -15,7 +15,7 @@ contract Blacklist {
 
     modifier notBlacklisted() {
         bool userBlacklisted = false;
-        for (uint i = 0; i < blacklist.length; i++) {
+        for (uint256 i = 0; i < blacklist.length; i++) {
             if (blacklist[i] == msg.sender) {
                 userBlacklisted = true;
                 break;
