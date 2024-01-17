@@ -12,7 +12,7 @@ const config: HardhatUserConfig = {
     solidity: '0.8.20',
     networks: {
         hardhat: {
-            blockGasLimit: 10000000,
+            blockGasLimit: 200_000_000,
             allowUnlimitedContractSize: true,
         },
     },

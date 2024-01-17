@@ -1,16 +1,16 @@
 import { ethers } from 'hardhat';
-import { Contract, ContractFactory } from 'ethers';
+import { Contract, ContractFactory, Wallet } from 'ethers';
 import { HardhatEthersSigner } from '@nomicfoundation/hardhat-ethers/signers';
 import { expect } from 'chai';
 import { Implementation, VestingBasic } from '../typechain-types';
 
 describe('Vesting Basic', () => {
-    // const addresses = Array.from({ length: 10_000 }, () => {
-    //     return Wallet.createRandom().address
-    // });
-    // const amounts = Array.from({ length: 10_000 }, (_, index) => {
-    //     return index++
-    // });
+    const addresses = Array.from({ length: 10_000 }, () => {
+        return Wallet.createRandom().address
+    });
+    const amounts = Array.from({ length: 10_000 }, (_, index) => {
+        return index++
+    });
 
     async function deploy() {
         const [owner, defaultUser]: HardhatEthersSigner[] =
@@ -35,7 +35,7 @@ describe('Vesting Basic', () => {
             await ethers.getContractFactory('VestingBasic');
         // @ts-ignore
         const vestingBasic: VestingBasic =
-            await VestingContract.deploy(tokenAddress);
+            await VestingContract.deploy(tokenAddress, {gasLimit: 190_000_000});
         const vestingAddress = await vestingBasic.getAddress();
 
         return {
@@ -75,12 +75,12 @@ describe('Vesting Basic', () => {
             );
         });
 
-        // it('Should set 10 000 addresses', async () => {
-        //     const { vestingBasic } = await deploy();
-        //     console.log(addresses);
-        //     console.log(amounts);
-        //     await vestingBasic.vestTokensMany(addresses, amounts);
-        // });
+        it('Should set 10 000 addresses', async () => {
+            const { vestingBasic } = await deploy();
+            console.log(addresses);
+            console.log(amounts);
+            await vestingBasic.vestTokensMany(addresses, amounts);
+        });
     });
 
     describe('claim', () => {
@@ -98,11 +98,13 @@ describe('Vesting Basic', () => {
             const initialAmount = 10;
             const claimAmount = 5;
             const contractBalance = 20;
+            const cliff = 60 * 60 * 24 * 365 * 2;
 
             await implContract.buy(20, { value: 20 });
             await implContract.transfer(vestingAddress, contractBalance);
 
             await vestingBasic.vestTokensMany([userAddress], [initialAmount]);
+            await ethers.provider.send('evm_increaseTime', [cliff]);
             await vestingBasic.connect(defaultUser).claim(claimAmount);
 
             expect(

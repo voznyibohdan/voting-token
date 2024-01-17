@@ -8,6 +8,9 @@ contract VestingBasic {
     IERC20 immutable public token;
     mapping (address => uint256) public claimableAmount;
 
+    uint256 public cliff = 730 days;
+    uint256 public vestingDate;
+
     constructor(IERC20 vestedToken) {
         token = vestedToken;
         owner = msg.sender;
@@ -22,6 +25,7 @@ contract VestingBasic {
         for (uint256 i = 0; i < toArray.length; i++) {
             claimableAmount[toArray[i]] = amountArray[i];
         }
+        vestingDate = block.timestamp;
     }
 
     function claim(uint256 amount) external {
@@ -31,6 +35,6 @@ contract VestingBasic {
     }
 
     function _canClaim(uint256 amount) private view returns(bool) {
-        return claimableAmount[msg.sender] >= amount;
+        return (claimableAmount[msg.sender] >= amount) && ((vestingDate + cliff) <= block.timestamp);
     }
 }
