@@ -3,7 +3,7 @@ import { ethers } from 'hardhat';
 async function main() {
     const reentrancyContract = await ethers.deployContract('Reentrancy');
     await reentrancyContract.waitForDeployment();
-    await reentrancyContract.deposit({ value: ethers.parseEther('10') });
+    await reentrancyContract.deposit({ value: ethers.parseEther('9') });
 
     const attackContract = await ethers.deployContract('ReentrancyAttack', [
         await reentrancyContract.getAddress(),

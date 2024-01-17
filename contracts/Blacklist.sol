@@ -22,6 +22,7 @@ contract Blacklist {
             }
         }
         require(!userBlacklisted, "user is in black list");
+        _;
     }
 
 //    modifier notBlacklisted() {
