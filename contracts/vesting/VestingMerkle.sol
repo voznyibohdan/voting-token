@@ -8,7 +8,7 @@ contract VestingMerkle {
     address public owner;
 
     mapping (address => bool) public addressClaim;
-    bytes32 public claimMerkleRoot;
+    bytes32 public merkleRoot;
     IERC20 immutable public token;
 
     constructor(IERC20 vestedToken) {
@@ -21,18 +21,19 @@ contract VestingMerkle {
         _;
     }
 
-    function vestTokens(bytes32 merkleRoot) external onlyOwner {
-        claimMerkleRoot = merkleRoot;
+    function vestTokens(bytes32 _merkleRoot) external onlyOwner {
+        merkleRoot = _merkleRoot;
     }
 
-    function claimTokens(uint256 amount, bytes32[] calldata merkleProof) external {
-        require(canClaimTokens(amount, merkleProof), "cannot claim");
+    function claimTokens(uint256 amount, bytes32[] calldata proof) external {
+        require(canClaimTokens(amount, proof), "cannot claim");
         addressClaim[msg.sender] = true;
         token.transfer(msg.sender, amount);
     }
 
-    function canClaimTokens(uint256 amount, bytes32[] calldata merkleProof) private view returns (bool) {
+    function canClaimTokens(uint256 amount, bytes32[] calldata proof) private view returns (bool) {
+        bytes32 leaf = keccak256(abi.encode(msg.sender, amount));
         return addressClaim[msg.sender] == false &&
-            MerkleProof.verify(merkleProof, claimMerkleRoot, keccak256(abi.encodePacked(msg.sender,amount)));
+            MerkleProof.verify(proof, merkleRoot, leaf);
     }
 }

@@ -16,6 +16,7 @@ describe('Implementation Contract', () => {
         const initialFeePercentage = 5;
 
         const ImplementationContract = await ethers.getContractFactory('Implementation');
+        // @ts-ignore
         const implContract: Implementation = await ImplementationContract.deploy(
             initialPrice,
             initialMinTokenAmount,

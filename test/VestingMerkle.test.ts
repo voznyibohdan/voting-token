@@ -4,7 +4,8 @@ import { Implementation, VestingMerkle } from '../typechain-types';
 import { Contract, ContractFactory } from 'ethers';
 import { expect } from 'chai';
 import { MerkleTree } from 'merkletreejs';
-import { keccak256 } from 'js-sha3';
+import keccak256 from "keccak256";
+import { defaultAbiCoder } from '@ethersproject/abi';
 
 describe('Vesting Merkle', () => {
     const addresses = [
@@ -20,7 +21,9 @@ describe('Vesting Merkle', () => {
         { address: '0x9732454a4be953e7195096FedBbc3af22C197065', amount: 19 },
     ];
 
-    const leaves = addresses.map(({ address, amount }) => keccak256(`${address}-${amount}`));
+    const leaves = addresses.map(({ address, amount }) =>
+        keccak256(defaultAbiCoder.encode(['address', 'uint256'], [address, amount])),
+    );
     const tree = new MerkleTree(leaves, keccak256);
     const root = tree.getRoot();
 
@@ -43,6 +46,7 @@ describe('Vesting Merkle', () => {
             tokenAddress,
             vestingAddress,
             vestingMerkle,
+            implContract
         };
     }
 
@@ -64,7 +68,7 @@ describe('Vesting Merkle', () => {
             const { vestingMerkle } = await deploy();
             await vestingMerkle.vestTokens(root);
 
-            const storedMerkleRoot = await vestingMerkle.claimMerkleRoot();
+            const storedMerkleRoot = await vestingMerkle.merkleRoot();
             const bufferMerkleRoot = Buffer.from(storedMerkleRoot.slice(2), 'hex');
 
             expect(bufferMerkleRoot).to.deep.equal(root);
@@ -73,9 +77,37 @@ describe('Vesting Merkle', () => {
 
     describe('claimTokens', () => {
         it('Should revert', async () => {
-            const { vestingMerkle } = await deploy();
-            const proof = tree.getHexProof(leaves[0]);
-            await expect(vestingMerkle.claimTokens(10, proof)).to.revertedWith('cannot claim');
+            const { vestingMerkle, user } = await deploy();
+            const userAmount = 10;
+            const overUserAmount = 20;
+            const leaf = keccak256(defaultAbiCoder.encode(['address', 'uint256'], [user.address, userAmount]));
+            const tree = new MerkleTree([leaf], keccak256);
+            const proof = tree.getHexProof(leaf);
+            const root = tree.getHexRoot();
+
+            await expect(vestingMerkle.connect(user).claimTokens(userAmount, proof)).to.revertedWith('cannot claim');
+            await vestingMerkle.vestTokens(root);
+            await expect(vestingMerkle.connect(user).claimTokens(overUserAmount, proof)).to.revertedWith('cannot claim');
+            await expect(vestingMerkle.connect(user).claimTokens(userAmount, proof)).to.revertedWith('Insufficient balance');
+        });
+
+        it('Should set addressClaim to true, transfer tokens to user', async () => {
+            const { vestingMerkle, user, implContract, vestingAddress } = await deploy();
+            const leaf = keccak256(defaultAbiCoder.encode(['address', 'uint256'], [user.address, 10]));
+            const tree = new MerkleTree([leaf], keccak256);
+            const proof = tree.getHexProof(leaf);
+            const root = tree.getHexRoot();
+
+            const contractBalance = 20;
+            const userVestingBalance = 10;
+
+            await implContract.buy(contractBalance, { value: 20 });
+            await implContract.transfer(vestingAddress, contractBalance);
+            await vestingMerkle.vestTokens(root);
+            await vestingMerkle.connect(user).claimTokens(userVestingBalance, proof);
+
+            expect(await vestingMerkle.addressClaim(user.address)).to.equal(true);
+            expect(await implContract.balances(user.address)).to.equal(userVestingBalance);
         });
     });
 });
