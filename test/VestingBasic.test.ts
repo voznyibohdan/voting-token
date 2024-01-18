@@ -6,36 +6,31 @@ import { Implementation, VestingBasic } from '../typechain-types';
 
 describe('Vesting Basic', () => {
     const addresses = Array.from({ length: 10_000 }, () => {
-        return Wallet.createRandom().address
+        return Wallet.createRandom().address;
     });
     const amounts = Array.from({ length: 10_000 }, (_, index) => {
-        return index++
+        return index++;
     });
 
     async function deploy() {
-        const [owner, defaultUser]: HardhatEthersSigner[] =
-            await ethers.getSigners();
+        const [owner, defaultUser]: HardhatEthersSigner[] = await ethers.getSigners();
 
         const initialPrice = 1;
         const initialMinTokenAmount = 5;
         const initialFeePercentage = 5;
 
-        const ImplementationContract =
-            await ethers.getContractFactory('Implementation');
+        const ImplementationContract = await ethers.getContractFactory('Implementation');
         // @ts-ignore
-        const implContract: Implementation =
-            await ImplementationContract.deploy(
-                initialPrice,
-                initialMinTokenAmount,
-                initialFeePercentage,
-            );
+        const implContract: Implementation = await ImplementationContract.deploy(
+            initialPrice,
+            initialMinTokenAmount,
+            initialFeePercentage,
+        );
         const tokenAddress = await implContract.getAddress();
 
-        const VestingContract: ContractFactory<any[], Contract> =
-            await ethers.getContractFactory('VestingBasic');
+        const VestingContract: ContractFactory<any[], Contract> = await ethers.getContractFactory('VestingBasic');
         // @ts-ignore
-        const vestingBasic: VestingBasic =
-            await VestingContract.deploy(tokenAddress, {gasLimit: 190_000_000});
+        const vestingBasic: VestingBasic = await VestingContract.deploy(tokenAddress, { gasLimit: 190_000_000 });
         const vestingAddress = await vestingBasic.getAddress();
 
         return {
@@ -59,9 +54,7 @@ describe('Vesting Basic', () => {
     describe('vestTokensMany', () => {
         it('Should fail if called not by owner', async () => {
             const { vestingBasic, defaultUser } = await deploy();
-            await expect(
-                vestingBasic.connect(defaultUser).vestTokensMany([], []),
-            ).to.revertedWith('not owner');
+            await expect(vestingBasic.connect(defaultUser).vestTokensMany([], [])).to.revertedWith('not owner');
         });
 
         it('Should set correct amount to addresses', async () => {
@@ -70,9 +63,7 @@ describe('Vesting Basic', () => {
             const amount = 10;
 
             await vestingBasic.vestTokensMany([address], [amount]);
-            expect(await vestingBasic.claimableAmount(address)).to.equal(
-                amount,
-            );
+            expect(await vestingBasic.claimableAmount(address)).to.equal(amount);
         });
 
         it('Should set 10 000 addresses', async () => {
@@ -86,14 +77,11 @@ describe('Vesting Basic', () => {
     describe('claim', () => {
         it('Should revert', async () => {
             const { vestingBasic, defaultUser } = await deploy();
-            await expect(
-                vestingBasic.connect(defaultUser).claim(10),
-            ).to.revertedWith('cannot claim');
+            await expect(vestingBasic.connect(defaultUser).claim(10)).to.revertedWith('cannot claim');
         });
 
         it('Should decrease claimableAmount and contract balance', async () => {
-            const { vestingBasic, implContract, vestingAddress, defaultUser } =
-                await deploy();
+            const { vestingBasic, implContract, vestingAddress, defaultUser } = await deploy();
             const userAddress = defaultUser.address;
             const initialAmount = 10;
             const claimAmount = 5;
@@ -107,14 +95,10 @@ describe('Vesting Basic', () => {
             await ethers.provider.send('evm_increaseTime', [cliff]);
             await vestingBasic.connect(defaultUser).claim(claimAmount);
 
-            expect(
-                await vestingBasic
-                    .connect(defaultUser)
-                    .claimableAmount(userAddress),
-            ).to.equal(initialAmount - claimAmount);
-            expect(await implContract.balances(vestingAddress)).to.equal(
-                contractBalance - claimAmount,
+            expect(await vestingBasic.connect(defaultUser).claimableAmount(userAddress)).to.equal(
+                initialAmount - claimAmount,
             );
+            expect(await implContract.balances(vestingAddress)).to.equal(contractBalance - claimAmount);
         });
     });
 });

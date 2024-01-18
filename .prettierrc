@@ -3,11 +3,11 @@
   "endOfLine": "auto",
   "tabWidth": 4,
   "useTabs": false,
+  "printWidth": 120,
   "overrides": [
     {
       "files": "*.sol",
       "options": {
-        "printWidth": 120,
         "singleQuote": false,
         "bracketSpacing": false,
         "explicitTypes": "always"
