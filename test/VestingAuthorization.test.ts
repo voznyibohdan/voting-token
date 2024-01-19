@@ -26,13 +26,13 @@ describe('', () => {
             vestingAuthorization,
             to,
             signature,
-            vestingAddress
+            vestingAddress,
         };
     }
 
     describe('canClaim', () => {
         it('Users should be able to claim tokens', async () => {
-            const {vestingAuthorization, to,signature } = await deploy();
+            const { vestingAuthorization, to, signature } = await deploy();
             await vestingAuthorization.connect(to).canClaim(to.address, 10, 1, signature.slice(0, 65));
         });
     });
