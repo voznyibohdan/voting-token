@@ -28,7 +28,7 @@ contract VestingAuthorizing {
         bytes32 messageHash = getMessageHash(_to, _amount, _nonce);
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
 
-        require(recoverSigner(ethSignedMessageHash, signature) == owner);
+        require(recoverSigner(ethSignedMessageHash, signature) == owner, "signature failed");
 //        msg.sender.transfer(_amount);
     }
 

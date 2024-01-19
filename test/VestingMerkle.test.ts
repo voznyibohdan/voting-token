@@ -4,7 +4,7 @@ import { Implementation, VestingMerkle } from '../typechain-types';
 import { Contract, ContractFactory } from 'ethers';
 import { expect } from 'chai';
 import { MerkleTree } from 'merkletreejs';
-import keccak256 from "keccak256";
+import keccak256 from 'keccak256';
 import { defaultAbiCoder } from '@ethersproject/abi';
 
 describe('Vesting Merkle', () => {
@@ -37,7 +37,7 @@ describe('Vesting Merkle', () => {
 
         const VestingContract: ContractFactory<any[], Contract> = await ethers.getContractFactory('VestingMerkle');
         // @ts-ignore
-        const vestingMerkle: VestingMerkle = await VestingContract.deploy(tokenAddress, { gasLimit: 190_000_000 });
+        const vestingMerkle: VestingMerkle = await VestingContract.deploy(tokenAddress);
         const vestingAddress = await vestingMerkle.getAddress();
 
         return {
@@ -46,7 +46,7 @@ describe('Vesting Merkle', () => {
             tokenAddress,
             vestingAddress,
             vestingMerkle,
-            implContract
+            implContract,
         };
     }
 
@@ -87,8 +87,12 @@ describe('Vesting Merkle', () => {
 
             await expect(vestingMerkle.connect(user).claimTokens(userAmount, proof)).to.revertedWith('cannot claim');
             await vestingMerkle.vestTokens(root);
-            await expect(vestingMerkle.connect(user).claimTokens(overUserAmount, proof)).to.revertedWith('cannot claim');
-            await expect(vestingMerkle.connect(user).claimTokens(userAmount, proof)).to.revertedWith('Insufficient balance');
+            await expect(vestingMerkle.connect(user).claimTokens(overUserAmount, proof)).to.revertedWith(
+                'cannot claim',
+            );
+            await expect(vestingMerkle.connect(user).claimTokens(userAmount, proof)).to.revertedWith(
+                'Insufficient balance',
+            );
         });
 
         it('Should set addressClaim to true, transfer tokens to user', async () => {
