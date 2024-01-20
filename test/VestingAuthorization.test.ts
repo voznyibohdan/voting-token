@@ -26,7 +26,7 @@ describe('', () => {
         const hash = await vestingAuthorization.getMessageHash(to.address, amount, nonce);
         const sig = await signer.signMessage(ethers.getBytes(hash));
 
-        return { vestingAuthorization,implContract,tokenAddress, signer, to, amount, nonce, sig, vestingAddress };
+        return { vestingAuthorization, implContract, tokenAddress, signer, to, amount, nonce, sig, vestingAddress };
     }
 
     describe('deploy', () => {
@@ -35,7 +35,7 @@ describe('', () => {
             expect(await vestingAuthorization.owner()).to.equal(signer.address);
             expect(await vestingAuthorization.token()).to.equal(tokenAddress);
         });
-    })
+    });
 
     describe('canClaim', () => {
         it('Should revert', async () => {
@@ -43,8 +43,12 @@ describe('', () => {
             await vestingAuthorization.claimTokens(to.address, amount, nonce, sig);
 
             const wrongNonce = 124;
-            await expect(vestingAuthorization.claimTokens(to.address, amount, nonce, sig)).to.revertedWith('nonce already used');
-            await expect(vestingAuthorization.claimTokens(to.address, amount, wrongNonce, sig)).to.revertedWith('signature failed');
+            await expect(vestingAuthorization.claimTokens(to.address, amount, nonce, sig)).to.revertedWith(
+                'nonce already used',
+            );
+            await expect(vestingAuthorization.claimTokens(to.address, amount, wrongNonce, sig)).to.revertedWith(
+                'signature failed',
+            );
         });
 
         it('Users should be able to claim tokens', async () => {
