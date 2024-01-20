@@ -26,12 +26,12 @@ contract VestingMerkle {
     }
 
     function claimTokens(uint256 amount, bytes32[] calldata proof) external {
-        require(canClaimTokens(amount, proof), "cannot claim");
+        require(_canClaimTokens(amount, proof), "cannot claim");
         addressClaim[msg.sender] = true;
         token.transfer(msg.sender, amount);
     }
 
-    function canClaimTokens(uint256 amount, bytes32[] calldata proof) private view returns (bool) {
+    function _canClaimTokens(uint256 amount, bytes32[] calldata proof) private view returns (bool) {
         bytes32 leaf = keccak256(abi.encode(msg.sender, amount));
         return addressClaim[msg.sender] == false &&
             MerkleProof.verify(proof, merkleRoot, leaf);

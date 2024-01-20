@@ -21,7 +21,7 @@ contract VestingAuthorizing {
         return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _messageHash));
     }
 
-    function canClaim(address _to, uint _amount, uint _nonce, bytes memory signature) public {
+    function claimTokens(address _to, uint _amount, uint _nonce, bytes memory signature) public {
         require(!usedNonces[_nonce], "nonce already used");
         usedNonces[_nonce] = true;
 
@@ -29,7 +29,7 @@ contract VestingAuthorizing {
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
 
         require(recoverSigner(ethSignedMessageHash, signature) == owner, "signature failed");
-//        msg.sender.transfer(_amount);
+        token.transfer(_to, _amount);
     }
 
     function recoverSigner(bytes32 _ethSignedMessageHash, bytes memory _signature) public pure returns (address) {
