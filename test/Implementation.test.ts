@@ -193,7 +193,7 @@ describe('Implementation Contract', () => {
                 'Insufficient balance to execute this function',
             );
             await implContract.startVoting(1);
-            await expect(implContract.startVoting(1)).to.revertedWith('Voting already in progress');
+            await expect(implContract.startVoting(1)).to.revertedWith('VotingList.sol already in progress');
         });
 
         it('Should update votingId, voters, voting state, voting prices, leadingPrice, emit VotingStarted event', async () => {
@@ -226,7 +226,7 @@ describe('Implementation Contract', () => {
                 'Insufficient balance to execute this function',
             );
             await buy(implContract, fromAccount, 100);
-            await expect(implContract.vote(1)).to.revertedWith('Voting has not started yet');
+            await expect(implContract.vote(1)).to.revertedWith('VotingList.sol has not started yet');
             await startVoting(implContract, userAccount);
             await expect(implContract.vote(1)).to.revertedWith('Already voted');
         });
@@ -259,9 +259,9 @@ describe('Implementation Contract', () => {
     describe('EndVoting', () => {
         it('Should revert', async () => {
             const { implContract, userAccount } = await loadFixture(deploy);
-            await expect(implContract.endVoting()).to.revertedWith('Voting is not in progress');
+            await expect(implContract.endVoting()).to.revertedWith('VotingList.sol is not in progress');
             await startVoting(implContract, userAccount);
-            await expect(implContract.endVoting()).to.revertedWith('Voting period not ended yet');
+            await expect(implContract.endVoting()).to.revertedWith('VotingList.sol period not ended yet');
         });
 
         it('Should set new tokenPrice, set leadingPrice to zero, VotingEnded', async () => {
