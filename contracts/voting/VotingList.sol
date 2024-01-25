@@ -25,8 +25,11 @@ contract VotingList {
     constructor() {}
 
     function startVoting(uint256 _price) external {
+        votingInProgress = true;
         currentVotingId += 1;
         nodes[_price] = Node({next: 0, votes: balances[msg.sender], votingId: currentVotingId});
+        voters[msg.sender] = Voter({votedPrice: _price, votingId: currentVotingId});
+        head = _price;
     }
 
     function vote(uint256 _price, uint256 _prevNodeId, uint256 _currentPrevNodeId) external {
@@ -49,6 +52,7 @@ contract VotingList {
         } else {
             _createNode(prevNode, _prevNodeId, afterNodeVotes, userBalance, _price);
         }
+        voters[msg.sender] = Voter({votedPrice: _price, votingId: currentVotingId});
     }
 
     function buy(uint256 _amount, uint256 _prevNodeId, uint256 _currentPrevNodeId) external {
@@ -121,16 +125,17 @@ contract VotingList {
             return;
         }
 
-        require(nodes[_currentPrevNodeId].next == _price, "incorrect position");
+        require(nodes[_currentPrevNodeId].next == _price, "proposed node incorrect position");
         
         if (_prevNodeId == 0) {
-            require(_updatedNodeVotes > nodes[head].votes, "incorrect position");
+            require(_updatedNodeVotes > nodes[head].votes, "setting head incorrect position");
             _removeNode(_currentPrevNodeId, _priceNode.next);
             nodes[_price].next = head;
             nodes[_price].votes = _updatedNodeVotes;
             head = _price;
         } else {
-            require(_prevNode.votes >= _updatedNodeVotes && _afterNodeVotes <= _updatedNodeVotes, "incorrect position");
+            require(_prevNode.votes >= _updatedNodeVotes && _afterNodeVotes <= _updatedNodeVotes, "1 incorrect position");
+            nodes[_price].votes = _updatedNodeVotes;
             _updateNodePosition(_currentPrevNodeId, _priceNode.next, _prevNodeId, _prevNode.next, _price);
         }
     }
@@ -187,7 +192,7 @@ contract VotingList {
     }
 
     function _setNewTail(Node memory _tailNode, uint256 _tailId, uint256 _userBalance, uint256 _newNodeId) private {
-        require(_tailNode.votes >= _userBalance, "incorrect position");
+        require(_tailNode.votes >= _userBalance, "tail incorrect position");
         nodes[_newNodeId] = Node({next: 0, votes: _userBalance, votingId: currentVotingId});
         nodes[_tailId].next = _newNodeId;
     }
@@ -196,11 +201,11 @@ contract VotingList {
         Node memory _prevNode, 
         uint256 _prevNodeId, 
         uint256 _afterNodeVotes, 
-        uint256 _userbalance, 
+        uint256 _userBalance,
         uint256 _newNodeId
     ) private {
-        require(_prevNode.votes >= _userbalance && _afterNodeVotes <= _userbalance, "incorrect position");
-        nodes[_newNodeId] = Node({next: _prevNode.next, votes: _userbalance, votingId: currentVotingId});
+        require(_prevNode.votes >= _userBalance && _afterNodeVotes <= _userBalance, "create node incorrect position");
+        nodes[_newNodeId] = Node({next: _prevNode.next, votes: _userBalance, votingId: currentVotingId});
         nodes[_prevNodeId].next = _newNodeId;
     }
 }
