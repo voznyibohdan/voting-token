@@ -20,8 +20,8 @@ const config: HardhatUserConfig = {
             blockGasLimit: 200_000_000,
             allowUnlimitedContractSize: true,
             forking: {
-                url: (process.env.MAINNET_HTTP as string),
-            }
+                url: process.env.MAINNET_HTTP as string,
+            },
         },
     },
     gasReporter: {
