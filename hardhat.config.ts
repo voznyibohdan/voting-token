@@ -12,9 +12,16 @@ const REPORT_GAS = process.env.REPORT_GAS === 'true';
 const config: HardhatUserConfig = {
     solidity: '0.8.20',
     networks: {
+        sepolia: {
+            url: `${process.env.ALCHEMY_SEPOLIA_URL}`,
+            accounts: [`0x${process.env.SEPOLIA_PRIVATE_KEY}`],
+        },
         hardhat: {
             blockGasLimit: 200_000_000,
             allowUnlimitedContractSize: true,
+            forking: {
+                url: (process.env.MAINNET_HTTP as string),
+            }
         },
     },
     gasReporter: {
