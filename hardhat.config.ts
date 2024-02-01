@@ -4,7 +4,7 @@ import '@nomicfoundation/hardhat-toolbox';
 import 'hardhat-gas-reporter';
 import '@nomicfoundation/hardhat-ethers';
 import '@nomiclabs/hardhat-web3';
-import "@nomicfoundation/hardhat-toolbox";
+import '@nomicfoundation/hardhat-toolbox';
 
 dotenv.config();
 
