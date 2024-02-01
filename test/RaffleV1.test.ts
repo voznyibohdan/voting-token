@@ -5,11 +5,11 @@ import { expect } from 'chai';
 
 describe('Ruffle implementation v1', () => {
     const bnbChainMainnet = '0x404460C6A5EdE2D891e8297795264fDe62ADBB75';
+    const adaUsd = '0xAE48c91dF1fE419994FFDa27da09D5aC69c30f55';
     const sepoliaTestnet = '0x779877A7B0D9E8603169DdbD7836e478b4624789';
 
     async function deploy() {
         const [owner, user]: HardhatEthersSigner[] = await ethers.getSigners();
-
         const swapRouter = '0xE592427A0AEce92De3Edee1F18E0157C05861564';
 
         const Contract = await ethers.getContractFactory('RaffleImplementationV1');
@@ -48,9 +48,9 @@ describe('Ruffle implementation v1', () => {
         it('Should return token price', async () => {
             try {
                 const { contract } = await deploy();
-                await contract.addAllowedToken(bnbChainMainnet);
-                const price = await contract.getLatestTokenPrice(bnbChainMainnet);
-                console.log('price: ', price);
+                await contract.addAllowedToken(adaUsd);
+                const price = await contract.getLatestTokenPrice(adaUsd);
+                expect(price).to.be.greaterThan(0);
             } catch (error) {
                 console.log(error);
             }
