@@ -55,7 +55,7 @@ contract RaffleImplementationV1 {
 
     function getLatestTokenPrice(address _token) public view onlyAllowedTokens(_token) returns (int) {
         AggregatorV3Interface tokenPriceFeed = AggregatorV3Interface(_token);
-//        require(address(tokenPriceFeed) == _token, "Invalid token address");
+        require(address(tokenPriceFeed) == _token, "Invalid token address");
         (, int price, , ,) = tokenPriceFeed.latestRoundData();
         return price;
     }
