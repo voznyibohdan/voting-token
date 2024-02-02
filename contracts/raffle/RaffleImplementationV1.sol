@@ -91,40 +91,107 @@ contract RaffleImplementationV1 {
         emit RaffleEnded(winner.account, block.timestamp);
     }
 
-    function deposit(address _token, uint256 _amount) external onlyAllowedTokens(_token) {
-        IERC20 tokenContract = IERC20(_token);
-        tokenContract.transferFrom(msg.sender, address(this), _amount);
+    function swap(address _tokenIn, address _tokenOut, uint256 _amountIn, address _to) external {
+        IERC20(_tokenIn).transferFrom(msg.sender, address(this), _amountIn);
+        IERC20(_tokenIn).approve(0xE592427A0AEce92De3Edee1F18E0157C05861564, _amountIn);
 
         ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
-            tokenIn: address(tokenContract),
-            tokenOut: WETH9,
-            fee: 1000,
-            recipient: address(this),
+            tokenIn: _tokenIn,
+            tokenOut: _tokenOut,
+            fee: 3000,
+            recipient: _to,
             deadline: block.timestamp,
-            amountIn: _amount,
+            amountIn: _amountIn,
             amountOutMinimum: 0,
             sqrtPriceLimitX96: 0
         });
-        uint256 amountOut = swapRouter.exactInputSingle(params);
 
-        int tokenPrice = getLatestTokenPrice(_token);
-        uint256 uintTokenPrice = uint(tokenPrice);
+        uint256 amountOut = swapRouter.exactInputSingle{value: _amountIn}(params);
+    }
 
-        uint256 equivalentETHAmount = (amountOut * uintTokenPrice) / (10 ** 18);
-        uint256 updatedRafflePool = rafflePool + equivalentETHAmount;
+    function deposit(address _tokenIn, uint256 _amountIn) external onlyAllowedTokens(_tokenIn) returns(uint256) {
+        // add approve amount before
+        IERC20(_tokenIn).transferFrom(msg.sender, address(this), _amountIn);
 
-        Participant memory participant = Participant({
-            rangeFrom: rafflePool++, 
-            rangeTo: updatedRafflePool, 
-            account: msg.sender, 
-            token: tokenContract
+        ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
+            tokenIn: _tokenIn,
+            tokenOut: 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2,
+            fee: 3000,
+            recipient: address(this),
+            deadline: block.timestamp,
+            amountIn: _amountIn,
+            amountOutMinimum: 0,
+            sqrtPriceLimitX96: 0
         });
 
-        rafflePool = updatedRafflePool;
-
-        participants.push(participant);
-        emit Deposit(msg.sender, tokenContract, _amount);
+        uint256 amountOut = swapRouter.exactInputSingle{value: _amountIn}(params);
+        return amountOut;
     }
+
+//    function deposit(address _token, uint256 _amount) external onlyAllowedTokens(_token) {
+//        IERC20 tokenContract = IERC20(_token);
+//        tokenContract.transferFrom(msg.sender, address(this), _amount);
+//
+//        ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
+//            tokenIn: address(tokenContract),
+//            tokenOut: WETH9,
+//            fee: 1000,
+//            recipient: address(this),
+//            deadline: block.timestamp,
+//            amountIn: _amount,
+//            amountOutMinimum: 0,
+//            sqrtPriceLimitX96: 0
+//        });
+//        uint256 amountOut = swapRouter.exactInputSingle(params);
+//
+//        int tokenPrice = getLatestTokenPrice(_token);
+//        uint256 uintTokenPrice = uint(tokenPrice);
+//
+//        uint256 equivalentETHAmount = (amountOut * uintTokenPrice) / (10 ** 18);
+//        uint256 updatedRafflePool = rafflePool + equivalentETHAmount;
+//
+//        Participant memory participant = Participant({
+//            rangeFrom: rafflePool++,
+//            rangeTo: updatedRafflePool,
+//            account: msg.sender,
+//            token: tokenContract
+//        });
+//
+//        rafflePool = updatedRafflePool;
+//
+//        participants.push(participant);
+//        emit Deposit(msg.sender, tokenContract, _amount);
+//    }
+
+//    function deposit(address tokenAddress, uint256 tokensAmount) external onlyAllowedTokens(tokenAddress) {
+//        // Step 1: Transfer tokens from the user to the contract
+//        IERC20(tokenAddress).transferFrom(msg.sender, address(this), tokensAmount);
+//
+//        // Step 2: Swap the received tokens to ETH using Uniswap V3
+//        address[] memory path = new address[](2);
+//        path[0] = tokenAddress;
+//        path[1] = WETH9; // WETH is needed for swapping to ETH
+//
+//        // Approve Uniswap Router to spend the tokens
+//        IERC20(tokenAddress).approve(swapRouter, tokensAmount);
+//
+//        // Swap tokens to ETH
+//        uint256 ethReceived = ISwapRouter(swapRouter).exactInputSingle(
+//            ISwapRouter.ExactInputSingleParams({
+//                tokenIn: tokenAddress,
+//                tokenOut: WETH9,
+//                fee: 3000, // Assuming 0.3% fee (3000 out of 1e5)
+//                recipient: address(this),
+//                deadline: block.timestamp + 600, // 10-minute deadline
+//                amountIn: tokensAmount,
+//                amountOutMinimum: 0, // Minimum acceptable ETH amount
+//                sqrtPriceLimitX96: 0 // No price limit
+//            })
+//        );
+//
+//        // Update the total Ether balance of the contract
+//        rafflePool += ethReceived;
+//    }
 
     function generateRandomNumber(uint256 max) public view returns (uint256) {
         uint256 randomNumber = uint256(keccak256(abi.encodePacked(blockhash(block.number - 1), "random* seed value")));
